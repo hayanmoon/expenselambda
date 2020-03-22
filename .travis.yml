@@ -1,1 +1,11 @@
 language: go
+
+deploy:
+  provider: lambda
+  function_name: "my-function"
+  region: "us-east-1"
+  role: "arn:aws:iam::120495798155:role/expenselambdaexecutionrole"
+  runtime: go1.x"
+  access_key_id: $AWS_ID
+  secret_access_key: $AWS_KEY 
+  handler_name: "main"
