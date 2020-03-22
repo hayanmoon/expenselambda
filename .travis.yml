@@ -1,5 +1,8 @@
 language: go
 
+env:
+  - GO111MODULE=on
+
 deploy:
   provider: lambda
   function_name: "my-function"
