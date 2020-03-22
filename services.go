@@ -17,7 +17,7 @@ type service struct {
 	client *dynamodb.DynamoDB
 }
 
-func (svc service) Initialize() {
+func (svc *service) Initialize() {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1"),
 	})
