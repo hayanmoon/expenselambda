@@ -13,3 +13,4 @@ deploy:
   secret_access_key: $AWS_KEY 
   handler_name: "main"
   module_name: ""
+  edge: true
