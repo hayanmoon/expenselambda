@@ -1,2 +1,2 @@
 build :
-	go build -o main
+	GOARCH=amd64 GOOS=linux go build -o main
