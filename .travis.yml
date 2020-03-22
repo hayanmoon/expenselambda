@@ -12,3 +12,4 @@ deploy:
   access_key_id: $AWS_ID
   secret_access_key: $AWS_KEY 
   handler_name: "main"
+  module_name: ""
