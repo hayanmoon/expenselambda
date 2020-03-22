@@ -5,7 +5,7 @@ env:
 
 deploy:
   provider: lambda
-  function_name: "my-function"
+  function_name: "expense-lambda"
   region: "us-east-1"
   role: "arn:aws:iam::120495798155:role/expenselambdaexecutionrole"
   runtime: go1.x
