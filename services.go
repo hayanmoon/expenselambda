@@ -39,7 +39,7 @@ func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse
 	}
 
 	currentTime := time.Now()
-	expense.Expenseid = currentTime.Format("20060102HHmm") //year month day hour minute
+	expense.Expenseid = currentTime.Format("20060102030405") //year month day hour minute
 	expense.Timestamp = currentTime.Unix()
 
 	av, err := dynamodbattribute.MarshalMap(expense)
