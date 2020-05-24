@@ -73,7 +73,10 @@ func (svc service) GetExpenses(user string, date string) (events.APIGatewayProxy
 				S: aws.String(date),
 			},
 		},
-		KeyConditionExpression: aws.String("user = :user and begins_with(expenseid, :dt)"), //filter on keys
+		ExpressionAttributeNames: map[string]*string{
+			"#u": aws.String("user"),
+		},
+		KeyConditionExpression: aws.String("#u = :user and begins_with(expenseid, :dt)"), //filter on keys
 	}
 
 	output, err := svc.client.Query(&input)
