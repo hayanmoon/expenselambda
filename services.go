@@ -39,8 +39,7 @@ func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse
 	}
 
 	currentTime := time.Now()
-	expense.Expenseid = currentTime.Format("20060102030405") //year month day hour minute
-	expense.Timestamp = currentTime.Unix()
+	expense.Date = currentTime.Format("20060102030405") //year month day hour minute second
 
 	av, err := dynamodbattribute.MarshalMap(expense)
 
@@ -74,9 +73,10 @@ func (svc service) GetExpenses(user string, date string) (events.APIGatewayProxy
 			},
 		},
 		ExpressionAttributeNames: map[string]*string{
-			"#u": aws.String("user"),
+			"#u":  aws.String("user"),
+			"#dt": aws.String("date"),
 		},
-		KeyConditionExpression: aws.String("#u = :user and begins_with(expenseid, :dt)"), //filter on keys
+		KeyConditionExpression: aws.String("#u = :user and begins_with(#dt, :dt)"), //filter on keys
 	}
 
 	output, err := svc.client.Query(&input)
