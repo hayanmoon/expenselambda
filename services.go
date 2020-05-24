@@ -61,16 +61,19 @@ func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse
 	return events.APIGatewayProxyResponse{Body: string("Expense Created"), StatusCode: 200}, nil
 }
 
-func (svc service) GetExpenses(id string) (events.APIGatewayProxyResponse, error) {
+func (svc service) GetExpenses(user string, date string) (events.APIGatewayProxyResponse, error) {
 	//form query to search
 	input := dynamodb.QueryInput{
 		TableName: aws.String("expense"),
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":id": {
-				S: aws.String(id),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{ //create values to use for filter
+			":user": {
+				S: aws.String(user),
+			},
+			":dt": {
+				S: aws.String(date),
 			},
 		},
-		KeyConditionExpression: aws.String("expenseid = :id"),
+		KeyConditionExpression: aws.String("user = :user and begins_with(expenseid, :dt)"), //filter on keys
 	}
 
 	output, err := svc.client.Query(&input)

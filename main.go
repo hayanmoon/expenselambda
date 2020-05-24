@@ -29,8 +29,9 @@ func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 		timestamp := req.QueryStringParameters["timestamp"]
 		return svc.DeleteExpense(expenseid, timestamp)
 	case "GET":
-		id := req.QueryStringParameters["expenseid"]
-		return svc.GetExpenses(id)
+		user := req.QueryStringParameters["user"]
+		date := req.QueryStringParameters["date"]
+		return svc.GetExpenses(user, date)
 	default:
 		return clientError(http.StatusMethodNotAllowed)
 	}
