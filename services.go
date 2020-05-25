@@ -106,7 +106,7 @@ func (svc service) DeleteExpense(user, date string) (events.APIGatewayProxyRespo
 				S: aws.String(user),
 			},
 			"date": {
-				N: aws.String(date),
+				S: aws.String(date),
 			},
 		},
 		//ExpressionAttributeNames: map[string]*string{
