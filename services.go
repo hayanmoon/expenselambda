@@ -60,7 +60,7 @@ func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse
 	return events.APIGatewayProxyResponse{Body: string("Expense Created"), StatusCode: 200}, nil
 }
 
-func (svc service) GetExpenses(user string, date string) (events.APIGatewayProxyResponse, error) {
+func (svc service) GetExpenses(user, date string) (events.APIGatewayProxyResponse, error) {
 	//form query to search
 	input := dynamodb.QueryInput{
 		TableName: aws.String("expense"),
@@ -98,17 +98,21 @@ func (svc service) GetExpenses(user string, date string) (events.APIGatewayProxy
 	}, nil
 }
 
-func (svc service) DeleteExpense(expenseid, timestamp string) (events.APIGatewayProxyResponse, error) {
+func (svc service) DeleteExpense(user, date string) (events.APIGatewayProxyResponse, error) {
 	deleteInput := &dynamodb.DeleteItemInput{
 		TableName: aws.String("expense"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"expenseid": {
-				S: aws.String(expenseid),
+			"user": {
+				S: aws.String(user),
 			},
-			"timestamp": {
-				N: aws.String(timestamp),
+			"date": {
+				N: aws.String(date),
 			},
 		},
+		//ExpressionAttributeNames: map[string]*string{
+		//"#u":  aws.String("user"),
+		//"#dt": aws.String("date"),
+		//},
 	}
 
 	_, err := svc.client.DeleteItem(deleteInput)

@@ -25,9 +25,9 @@ func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 	case "PUT":
 		return svc.CreateExpense(req.Body)
 	case "DELETE":
-		expenseid := req.QueryStringParameters["expenseid"]
-		timestamp := req.QueryStringParameters["timestamp"]
-		return svc.DeleteExpense(expenseid, timestamp)
+		user := req.QueryStringParameters["user"]
+		date := req.QueryStringParameters["date"]
+		return svc.DeleteExpense(user, date)
 	case "GET":
 		user := req.QueryStringParameters["user"]
 		date := req.QueryStringParameters["date"]
