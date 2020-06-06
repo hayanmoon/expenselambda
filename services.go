@@ -36,7 +36,7 @@ func (svc service) CreateExpense(content string) error {
 	body := []byte(content)
 
 	if err = json.Unmarshal(body, &expense); err != nil {
-		errors.New("Invalid Expense Definition")
+		return errors.New("Invalid Expense Definition")
 	}
 
 	currentTime := time.Now()
