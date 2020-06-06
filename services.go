@@ -89,6 +89,7 @@ func (svc service) GetExpenses(user, date string) ([]byte, error) {
 	var items []Expense
 	dynamodbattribute.UnmarshalListOfMaps(output.Items, &items)
 	fmt.Println(len(items))
+	fmt.Println(items)
 	result, err := json.Marshal(items)
 	if err != nil {
 		return nil, errors.New("Unable to marshal query result")
