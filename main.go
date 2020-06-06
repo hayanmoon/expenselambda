@@ -1,33 +1,46 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// Response is the object that is returned
-type Response struct {
-	Body       string `json:"body"`
-	StatusCode int    `json:"statusCode"`
+type content struct {
+	Message string `json:"message"`
+	Ok      bool   `json:"ok"`
 }
 
-func response(message string) (Response, error) {
-	return Response{
-		Body:       message,
+func response(message string, ok bool) (events.APIGatewayProxyResponse, error) {
+	data := content{
+		Message: message,
+		Ok:      ok,
+	}
+	parsed, err := json.Marshal(data)
+
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Unable to parse response",
+		}, nil
+	}
+
+	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
+		Body:       string(parsed),
 	}, nil
 }
 
 //HandleRequest is responsible in receiving the content
-func HandleRequest(req events.APIGatewayProxyRequest) (Response, error) {
+func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	var svc service
 	err := svc.Initialize()
 
 	if err != nil {
-		return response(err.Error())
+		return response(err.Error(), false)
 	}
 
 	switch req.HTTPMethod {
@@ -35,32 +48,32 @@ func HandleRequest(req events.APIGatewayProxyRequest) (Response, error) {
 		err = svc.CreateExpense(req.Body)
 
 		if err != nil {
-			return response(err.Error())
+			return response(err.Error(), false)
 		}
 
-		return response("Expense Created")
+		return response("Expense Created", true)
 	case "DELETE":
 		user := req.QueryStringParameters["user"]
 		date := req.QueryStringParameters["date"]
 		err := svc.DeleteExpense(user, date)
 
 		if err != nil {
-			return response(err.Error())
+			return response(err.Error(), false)
 		}
 
-		return response("Expense Deleted")
+		return response("Expense Deleted", true)
 	case "GET":
 		user := req.QueryStringParameters["user"]
 		date := req.QueryStringParameters["date"]
 		result, err := svc.GetExpenses(user, date)
 
 		if err != nil {
-			return response(err.Error())
+			return response(err.Error(), false)
 		}
 
-		return response(string(result))
+		return response(string(result), true)
 	default:
-		return response(http.StatusText(http.StatusMethodNotAllowed))
+		return response(http.StatusText(http.StatusMethodNotAllowed), false)
 	}
 }
 
