@@ -2,11 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
+	"errors"
 	"time"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -17,25 +15,28 @@ type service struct {
 	client *dynamodb.DynamoDB
 }
 
-func (svc *service) Initialize() {
+func (svc *service) Initialize() error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1"),
 	})
 
 	if err != nil {
-		fmt.Println(err)
+		return errors.New("Could not initialize service")
 	}
 
 	svc.client = dynamodb.New(sess)
+
+	return nil
 }
 
-func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse, error) {
+func (svc service) CreateExpense(content string) error {
 	var expense Expense
+	var err error
 
 	body := []byte(content)
 
-	if err := json.Unmarshal(body, &expense); err != nil {
-		fmt.Println("Invalid Expense Definition")
+	if err = json.Unmarshal(body, &expense); err != nil {
+		errors.New("Invalid Expense Definition")
 	}
 
 	currentTime := time.Now()
@@ -44,7 +45,7 @@ func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse
 	av, err := dynamodbattribute.MarshalMap(expense)
 
 	if err != nil {
-		fmt.Println(err)
+		return errors.New("Unable to marshal expense")
 	}
 
 	input := &dynamodb.PutItemInput{
@@ -55,12 +56,12 @@ func (svc service) CreateExpense(content string) (events.APIGatewayProxyResponse
 	_, err = svc.client.PutItem(input)
 
 	if err != nil {
-		fmt.Println(err, "Expense was not created")
+		return errors.New("Expense Not Saved")
 	}
-	return events.APIGatewayProxyResponse{Body: string("Expense Created"), StatusCode: 200}, nil
+	return nil
 }
 
-func (svc service) GetExpenses(user, date string) (events.APIGatewayProxyResponse, error) {
+func (svc service) GetExpenses(user, date string) ([]byte, error) {
 	//form query to search
 	input := dynamodb.QueryInput{
 		TableName: aws.String("expense"),
@@ -81,7 +82,7 @@ func (svc service) GetExpenses(user, date string) (events.APIGatewayProxyRespons
 
 	output, err := svc.client.Query(&input)
 	if err != nil {
-		fmt.Println(err)
+		return nil, errors.New("Could not create query")
 	}
 
 	var items []Expense
@@ -89,16 +90,13 @@ func (svc service) GetExpenses(user, date string) (events.APIGatewayProxyRespons
 
 	result, err := json.Marshal(items)
 	if err != nil {
-		fmt.Println(err)
+		return nil, errors.New("Unable to marshal query result")
 	}
 
-	return events.APIGatewayProxyResponse{
-		Body:       string(result),
-		StatusCode: http.StatusOK,
-	}, nil
+	return result, nil
 }
 
-func (svc service) DeleteExpense(user, date string) (events.APIGatewayProxyResponse, error) {
+func (svc service) DeleteExpense(user, date string) error {
 	deleteInput := &dynamodb.DeleteItemInput{
 		TableName: aws.String("expense"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -112,8 +110,10 @@ func (svc service) DeleteExpense(user, date string) (events.APIGatewayProxyRespo
 	}
 
 	_, err := svc.client.DeleteItem(deleteInput)
+
 	if err != nil {
-		fmt.Println(err)
+		return errors.New("Expense not deleted")
 	}
-	return events.APIGatewayProxyResponse{Body: string("Expense Deleted"), StatusCode: 200}, nil
+
+	return nil
 }
