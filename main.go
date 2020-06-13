@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -35,12 +36,19 @@ func response(message string, ok bool) (events.APIGatewayProxyResponse, error) {
 
 //HandleRequest is responsible in receiving the content
 func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-
+	var user, date string
 	var svc service
 	err := svc.Initialize()
 
 	if err != nil {
 		return response(err.Error(), false)
+	}
+
+	//get query string parameters
+	fmt.Println(len(req.QueryStringParameters))
+	if len(req.QueryStringParameters) > 0 {
+		user = req.QueryStringParameters["user"]
+		date = req.QueryStringParameters["date"]
 	}
 
 	switch req.HTTPMethod {
@@ -53,8 +61,6 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 
 		return response("Expense Created", true)
 	case "DELETE":
-		user := req.QueryStringParameters["user"]
-		date := req.QueryStringParameters["date"]
 		err := svc.DeleteExpense(user, date)
 
 		if err != nil {
@@ -63,8 +69,6 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 
 		return response("Expense Deleted", true)
 	case "GET":
-		user := req.QueryStringParameters["user"]
-		date := req.QueryStringParameters["date"]
 		result, err := svc.GetExpenses(user, date)
 
 		if err != nil {
