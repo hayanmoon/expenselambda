@@ -39,8 +39,10 @@ func (svc service) CreateExpense(content string) error {
 		return errors.New("Invalid Expense Definition")
 	}
 
-	currentTime := time.Now()
-	expense.Date = currentTime.Format("20060102030405") //year month day hour minute second
+	if expense.Date == "" {
+		currentTime := time.Now()
+		expense.Date = currentTime.Format("20060102030405") //year month day hour minute second
+	}
 
 	av, err := dynamodbattribute.MarshalMap(expense)
 
